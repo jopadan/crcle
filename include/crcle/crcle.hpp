@@ -9,25 +9,23 @@
 namespace stdx = std::experimental;
 using namespace stdx::parallelism_v2;
 
-template<size_t N>
-concept power_of_two = std::popcount(N) == 1;
-
-template<uint8_t N>
-struct poly : std::array<uint8_t, (N >> 3)>
+namespace poly
 {
-	using T = std::make_unsigned_t<__int_with_sizeof_t<(N>>3)>>;
+	template<size_t N>
+	using type = std::make_unsigned_t<__int_with_sizeof_t<(N>>3)>>;
 
-	poly(T src)
-	{
-		T& val = *reinterpret_cast<T*>(this->data());
-		val = src;
-	}
-	constexpr static T ref(T val)
-	{
-		T bits = 0;
-		T mask = val;
+	template<size_t N>
+	constexpr static type<N> rol(type<N> val, const uint8_t d) { return (val << d | (val >> (N - d))); }
+	template<size_t N>
+	constexpr static type<N> ror(type<N> val, const uint8_t d) { return ((val >> d) | (val << (N - d))); }
 
-		for(int i = 0; i < N; i++)
+	template<size_t N>
+	constexpr static type<N> reflect(type<N> val)
+	{
+		type<N> bits = 0;
+		type<N> mask = val;
+
+		for(size_t i = 0; i < N; i++)
 		{
 			bits <<= 1;
 			if(mask & 1)
@@ -37,40 +35,34 @@ struct poly : std::array<uint8_t, (N >> 3)>
 
 		return bits;
 	}
-	constexpr static T rol(T val, const uint8_t d) { return (val << d | (val >> (N - d))); }
-	constexpr static T ror(T val, const uint8_t d) { return ((val >> d) | (val << (N - d))); }
+
+	enum ref
+	{
+		none = 0 << 0,
+		in   = 1 << 0,
+		out  = 1 << 1,
+	};
+
+	const type<32> invalid               = (type<32>)-1;
+	const type<32> crc32                 = 0x04C11DB7;
+	const type<32> crc32_ieee            = reflect<32>(crc32);
+	const type<32> crc32c_castagnolia    = 0x1EDC6F41;
+	const type<32> crc32k_koopman_1_3_28 = 0x741B8CD7;
+	const type<32> crc32k_koopman_1_1_30 = 0x32583499;
+	const type<32> crc32q                = 0x814141AB;
 };
 
-
-enum poly32 : uint32_t
-{
-	POLY32_CRC32                 = 0x04C11DB7,
-	POLY32_CRC32_IEEE            = poly<32>::ref(POLY32_CRC32),
-	POLY32_CRC32C_CASTAGNOLIA    = 0x1EDC6F41,
-	POLY32_CRC32K_KOOPMAN_1_3_28 = 0x741B8CD7,
-	POLY32_CRC32K_KOOPMAN_1_1_30 = 0x32583499,
-	POLY32_CRC32Q                = 0x814141AB,
-};
-
-enum crc_ref
-{
-	none = 0 << 0,
-	in   = 1 << 0,
-	out  = 1 << 1,
-};
-
-template<size_t N, poly<N>::T P, poly<N>::T xor_in = -1, poly<N>::T xor_out = -1, enum crc_ref reflect = crc_ref::none>
+template<size_t N, poly::type<N> P, poly::type<N> xor_in = -1, poly::type<N> xor_out = -1, enum poly::ref reflect = poly::ref::none>
 struct crc
 {
-	using T = std::make_unsigned_t<__int_with_sizeof_t<(N>>3)>>;
-	poly<N>::T compute(const uint8_t* buf, size_t len)
+	constexpr static poly::type<N> compute(const uint8_t* buf, size_t len)
 	{
-		T msb, crc;
+		poly::type<N> msb, crc;
 
 		crc = xor_in;
 		while(len--)
 		{
-			crc ^= ((T)((reflect & crc_ref::in) ? poly<8>::ref(*buf++) : *buf++)) << (N - 8);
+			crc ^= ((poly::type<N>)((reflect & poly::ref::in) ? poly::reflect<8>(*buf++) : *buf++)) << (N - 8);
 			for(int i=0;i<8;i++)
 			{
 				msb = crc>>(N-1);
@@ -79,18 +71,21 @@ struct crc
 			}
 		}
 
-		if(reflect & crc_ref::out)
-			crc = poly<32>::ref(crc);
+		if(reflect & poly::ref::out)
+			crc = poly::reflect<32>(crc);
 
 		return crc ^ xor_out;
 	}
 
-	poly<N>::T check()
+	constexpr static poly::type<N> check()
 	{
 		const char src[10] = "123456789";
 		return compute((uint8_t*)src, 9);
 	}
 };
 
-crc<32, POLY32_CRC32, (poly<32>::T)-1, 0, crc_ref::none> CRC32_MPEG2;
-crc<32, POLY32_CRC32, (poly<32>::T)-1, (poly<32>::T)-1, crc_ref::none> CRC32_CCITT;
+namespace crc32
+{
+	using mpeg2 = crc<32, poly::crc32, poly::invalid, 0, poly::ref::none>;
+	using ccitt = crc<32, poly::crc32, poly::invalid, poly::invalid, poly::ref::none>;
+};
