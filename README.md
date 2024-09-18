@@ -2,6 +2,8 @@
 CRC checksum C++ library 
 
 ```cpp
+namespace poly
+{
 	const type<32> inverse               = (type<32>)-1;
 	const type<32> neutral               = (type<32>) 0;
 	const type<32> crc32                 = 0x04C11DB7;
