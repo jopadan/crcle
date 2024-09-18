@@ -1,6 +1,8 @@
 # crcle
 CRC checksum C++ library 
 
+## Status
+
 ```cpp
 namespace poly
 {
@@ -19,6 +21,14 @@ namespace crc32
 	using mpeg2 = crc<32, poly::crc32, poly::inverse, poly::neutral, poly::ref_none>;
 	using ccitt = crc<32, poly::crc32, poly::inverse, poly::inverse, poly::ref_none>;
 };
+```
+
+## Usage
+
+```cpp
+#include <cstdlib>
+#include <cstdio>
+#include <crcle/crcle.hpp>
 
 int main(int argc, char** argv)
 {
