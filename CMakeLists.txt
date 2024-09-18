@@ -34,6 +34,4 @@ install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME} DESTINATION ${CM
 
 add_executable( example examples/example.cpp )
 target_link_libraries( example ${PROJECT_NAME} )
-add_executable( pod3 examples/pod3.cpp )
-target_link_libraries( pod3 ${PROJECT_NAME} )
 

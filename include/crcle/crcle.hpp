@@ -36,14 +36,15 @@ namespace poly
 		return bits;
 	}
 
-	enum ref
+	enum flags
 	{
-		none = 0 << 0,
-		in   = 1 << 0,
-		out  = 1 << 1,
+		ref_none = 0 << 0,
+		ref_in   = 1 << 0,
+		ref_out  = 1 << 1,
 	};
 
-	const type<32> invalid               = (type<32>)-1;
+	const type<32> inverse               = (type<32>)-1;
+	const type<32> neutral               = (type<32>) 0;
 	const type<32> crc32                 = 0x04C11DB7;
 	const type<32> crc32_ieee            = reflect<32>(crc32);
 	const type<32> crc32c_castagnolia    = 0x1EDC6F41;
@@ -52,7 +53,7 @@ namespace poly
 	const type<32> crc32q                = 0x814141AB;
 };
 
-template<size_t N, poly::type<N> P, poly::type<N> xor_in = -1, poly::type<N> xor_out = -1, enum poly::ref reflect = poly::ref::none>
+template<size_t N, poly::type<N> P, poly::type<N> xor_in = -1, poly::type<N> xor_out = -1, enum poly::flags reflect = poly::ref_none>
 struct crc
 {
 	constexpr static poly::type<N> compute(const uint8_t* buf, size_t len)
@@ -62,7 +63,7 @@ struct crc
 		crc = xor_in;
 		while(len--)
 		{
-			crc ^= ((poly::type<N>)((reflect & poly::ref::in) ? poly::reflect<8>(*buf++) : *buf++)) << (N - 8);
+			crc ^= ((poly::type<N>)((reflect & poly::ref_in) ? poly::reflect<8>(*buf++) : *buf++)) << (N - 8);
 			for(int i=0;i<8;i++)
 			{
 				msb = crc>>(N-1);
@@ -71,7 +72,7 @@ struct crc
 			}
 		}
 
-		if(reflect & poly::ref::out)
+		if(reflect & poly::ref_out)
 			crc = poly::reflect<32>(crc);
 
 		return crc ^ xor_out;
@@ -86,6 +87,6 @@ struct crc
 
 namespace crc32
 {
-	using mpeg2 = crc<32, poly::crc32, poly::invalid, 0, poly::ref::none>;
-	using ccitt = crc<32, poly::crc32, poly::invalid, poly::invalid, poly::ref::none>;
+	using mpeg2 = crc<32, poly::crc32, poly::inverse, poly::neutral, poly::ref_none>;
+	using ccitt = crc<32, poly::crc32, poly::inverse, poly::inverse, poly::ref_none>;
 };
