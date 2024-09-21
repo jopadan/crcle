@@ -72,10 +72,7 @@ struct crc
 			}
 		}
 
-		if(reflect & poly::ref_out)
-			crc = poly::reflect<32>(crc);
-
-		return crc ^ xor_out;
+		return (reflect & poly::ref_out) ? poly::reflect<N>(crc)^xor_out : crc^xor_out;
 	}
 
 	constexpr static poly::type<N> check()
