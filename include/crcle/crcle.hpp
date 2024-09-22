@@ -78,7 +78,7 @@ struct crc
 	constexpr static bool check()
 	{
 		poly::type<N> check = compute((const uint8_t*)"123456789", 9);
-		printf("[CHK] %s %.X8/%.X8\n", *name, check, chk);
+		printf("[CHK] %s %.8X/%.8X\n", *name, check, chk);
 		return check == chk;
 	}
 };
