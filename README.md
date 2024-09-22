@@ -10,7 +10,7 @@ namespace poly
 	const type<32> neutral               = (type<32>) 0;
 	const type<32> crc32                 = 0x04C11DB7;
 	const type<32> crc32_ieee            = reflect<32>(crc32);
-	const type<32> crc32c_castagnolia    = 0x1EDC6F41;
+	const type<32> crc32_iscsi           = 0x1EDC6F41;
 	const type<32> crc32k_koopman_1_3_28 = 0x741B8CD7;
 	const type<32> crc32k_koopman_1_1_30 = 0x32583499;
 	const type<32> crc32q                = 0x814141AB;
@@ -18,8 +18,15 @@ namespace poly
 
 namespace crc32
 {
-	using mpeg2 = crc<32, poly::crc32, poly::inverse, poly::neutral, poly::ref_none>;
-	using ccitt = crc<32, poly::crc32, poly::inverse, poly::inverse, poly::ref_none>;
+	namespace name
+	{
+		const char* mpeg2 = "CRC-32/MPEG2";
+		const char* ccitt = "CRC-32/CCITT";
+		const char* iscsi = "CRC-32/ISCSI";
+	};
+	using mpeg2 = crc<32, poly::crc32, poly::inverse, poly::neutral, poly::ref_none, 0x0376E6E7, &name::mpeg2>;
+	using ccitt = crc<32, poly::crc32, poly::inverse, poly::inverse, poly::ref_none, 0xFC891918, &name::ccitt>;
+	using iscsi = crc<32, poly::crc32_iscsi, poly::inverse, poly::inverse, poly::ref_out | poly::ref_in, 0xE3069283, &name::iscsi>;
 };
 ```
 
@@ -32,15 +39,7 @@ namespace crc32
 
 int main(int argc, char** argv)
 {
-	printf("[CHK] 0x%.8X CRC32_MPEG2 \"123456789\"\n",
-        crc32::mpeg2::compute((const uint8_t*)"123456789", 9));
-	printf("[CHK] 0x%.8X CRC32_MPEG2 \"123456789\"\n",
-        crc32::mpeg2::check());
-	printf("[CHK] 0x%.8X CRC32_CCITT \"123456789\"\n",
-        crc32::ccitt::compute((const uint8_t*)"123456789", 9));
-	printf("[CHK] 0x%.8X CRC32_CCITT \"123456789\"\n",
-        crc32::ccitt::check());
-	exit(EXIT_SUCCESS);
+    exit(crc32::mpeg2::check() && crc32::ccitt::check() && crc32::iscsi::check() ? EXIT_SUCCESS : EXIT_FAILURE);
 }
 ```
 

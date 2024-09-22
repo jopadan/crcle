@@ -47,13 +47,13 @@ namespace poly
 	const type<32> neutral               = (type<32>) 0;
 	const type<32> crc32                 = 0x04C11DB7;
 	const type<32> crc32_ieee            = reflect<32>(crc32);
-	const type<32> crc32c_castagnolia    = 0x1EDC6F41;
+	const type<32> crc32_iscsi           = 0x1EDC6F41;
 	const type<32> crc32k_koopman_1_3_28 = 0x741B8CD7;
 	const type<32> crc32k_koopman_1_1_30 = 0x32583499;
 	const type<32> crc32q                = 0x814141AB;
 };
 
-template<size_t N, poly::type<N> P, poly::type<N> xor_in = -1, poly::type<N> xor_out = -1, enum poly::flags reflect = poly::ref_none>
+template<size_t N, poly::type<N> P, poly::type<N> xor_in = -1, poly::type<N> xor_out = -1, enum poly::flags reflect = poly::ref_none, poly::type<N> chk = poly::inverse, const char** name = nullptr>
 struct crc
 {
 	constexpr static poly::type<N> compute(const uint8_t* buf, size_t len)
@@ -75,15 +75,23 @@ struct crc
 		return (reflect & poly::ref_out) ? poly::reflect<N>(crc)^xor_out : crc^xor_out;
 	}
 
-	constexpr static poly::type<N> check()
+	constexpr static bool check()
 	{
-		const char src[10] = "123456789";
-		return compute((uint8_t*)src, 9);
+		poly::type<N> check = compute((const uint8_t*)"123456789", 9);
+		printf("[CHK] %s %.X8/%.X8\n", *name, check, chk);
+		return check == chk;
 	}
 };
 
 namespace crc32
 {
-	using mpeg2 = crc<32, poly::crc32, poly::inverse, poly::neutral, poly::ref_none>;
-	using ccitt = crc<32, poly::crc32, poly::inverse, poly::inverse, poly::ref_none>;
+	namespace name
+	{
+		const char* mpeg2 = "CRC-32/MPEG2";
+		const char* ccitt = "CRC-32/CCITT";
+		const char* iscsi = "CRC-32/ISCSI";
+	};
+	using mpeg2 = crc<32, poly::crc32, poly::inverse, poly::neutral, poly::ref_none, 0x0376E6E7, &name::mpeg2>;
+	using ccitt = crc<32, poly::crc32, poly::inverse, poly::inverse, poly::ref_none, 0xFC891918, &name::ccitt>;
+	using iscsi = crc<32, poly::crc32_iscsi, poly::inverse, poly::inverse, poly::ref_out | poly::ref_in, 0xE3069283, &name::iscsi>;
 };
