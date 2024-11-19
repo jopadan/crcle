@@ -60,6 +60,7 @@ int main(int argc, char** argv)
 ## References
 
 - [Cyclic redundancy check](https://en.wikipedia.org/wiki/Cyclic_redundancy_check)
+- [CRC32 Demystified] (https://github.com/Michaelangel007/crc32)
 - [reveng](https://sourceforge.net/projects/reveng/)
 - [crccalc.com](https://crccalc.com/?crc=123456789&method=CRC-32/MPEG-2&datatype=0&outtype=0)
 - [Understanding CRC](http://www.sunshine2k.de/articles/coding/crc/understanding_crc.html)
