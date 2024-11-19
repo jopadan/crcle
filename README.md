@@ -6,6 +6,7 @@ CRC checksum C++ library
 ```cpp
 namespace poly
 {
+	const type<16> crc16                 = 0x8005;
 	const type<32> inverse               = (type<32>)-1;
 	const type<32> neutral               = (type<32>) 0;
 	const type<32> crc32                 = 0x04C11DB7;
@@ -16,6 +17,14 @@ namespace poly
 	const type<32> crc32q                = 0x814141AB;
 };
 
+namespace crc16
+{
+	namespace name
+	{
+		const char* arc = "CRC-16/ARC";
+	};
+	using arc = crc<16, poly::crc16, 0, 0, poly::ref_out | poly::ref_in, 0xBB3D, &name::arc>;
+};
 namespace crc32
 {
 	namespace name
@@ -39,7 +48,7 @@ namespace crc32
 
 int main(int argc, char** argv)
 {
-    exit(crc32::mpeg2::check() && crc32::ccitt::check() && crc32::iscsi::check() ? EXIT_SUCCESS : EXIT_FAILURE);
+	exit(crc16::arc::check() && crc32::zip::check() && crc32::iscsi::check() && crc32::mpeg2::check() && crc32::ccitt::check() ? EXIT_SUCCESS : EXIT_FAILURE);
 }
 ```
 

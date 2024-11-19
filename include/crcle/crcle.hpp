@@ -36,13 +36,14 @@ namespace poly
 		return bits;
 	}
 
-	enum flags
+	enum flags : int
 	{
 		ref_none = 0 << 0,
 		ref_in   = 1 << 0,
 		ref_out  = 1 << 1,
 	};
 
+	const type<16> crc16                 = 0x8005;
 	const type<32> inverse               = (type<32>)-1;
 	const type<32> neutral               = (type<32>) 0;
 	const type<32> crc32                 = 0x04C11DB7;
@@ -53,7 +54,7 @@ namespace poly
 	const type<32> crc32q                = 0x814141AB;
 };
 
-template<size_t N, poly::type<N> P, poly::type<N> xor_in = -1, poly::type<N> xor_out = -1, enum poly::flags reflect = poly::ref_none, poly::type<N> chk = poly::inverse, const char** name = nullptr>
+template<size_t N, poly::type<N> P, poly::type<N> xor_in = -1, poly::type<N> xor_out = -1, int reflect = poly::ref_none, poly::type<N> chk = poly::inverse, const char** name = nullptr>
 struct crc
 {
 	constexpr static poly::type<N> compute(const uint8_t* buf, size_t len)
@@ -83,14 +84,24 @@ struct crc
 	}
 };
 
+namespace crc16
+{
+	namespace name
+	{
+		const char* arc = "CRC-16/ARC";
+	};
+	using arc = crc<16, poly::crc16, 0, 0, poly::ref_out | poly::ref_in, 0xBB3D, &name::arc>;
+};
 namespace crc32
 {
 	namespace name
 	{
+		const char* zip   = "CRC-32/ZIP";
 		const char* mpeg2 = "CRC-32/MPEG2";
 		const char* ccitt = "CRC-32/CCITT";
 		const char* iscsi = "CRC-32/ISCSI";
 	};
+	using zip   = crc<32, poly::crc32, poly::inverse, poly::inverse, poly::ref_none, 0xFC891918, &name::zip>;
 	using mpeg2 = crc<32, poly::crc32, poly::inverse, poly::neutral, poly::ref_none, 0x0376E6E7, &name::mpeg2>;
 	using ccitt = crc<32, poly::crc32, poly::inverse, poly::inverse, poly::ref_none, 0xFC891918, &name::ccitt>;
 	using iscsi = crc<32, poly::crc32_iscsi, poly::inverse, poly::inverse, poly::ref_out | poly::ref_in, 0xE3069283, &name::iscsi>;
