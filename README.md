@@ -57,6 +57,7 @@ int main(int argc, char** argv)
 }
 ```
 
+
 ## References
 
 - [Cyclic redundancy check](https://en.wikipedia.org/wiki/Cyclic_redundancy_check)
@@ -67,3 +68,7 @@ int main(int argc, char** argv)
 - [A Collection of 32-bit CRC Tables and Algorithms](http://www.mrob.com/pub/comp/crc-all.html)
 - [Updated makecrc - macutils](https://github.com/jopadan/macutils)
 - [sz - lrzsz](https://www.ohse.de/uwe/software/lrzsz.html)
+
+## Applications
+- [CRC-16/ARC]  : [WAD Rise of The Triad](https://github.com/erysdren/NetROTT)
+- [CRC-32/MPEG2]: [POD Terminal Reality games](https://github.com/jopadan/termpod/wiki)
