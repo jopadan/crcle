@@ -71,6 +71,6 @@ int main(int argc, char** argv)
 
 ## Applications
 
-- [CRC-16/ARC]  : [WAD Rise of The Triad](https://github.com/erysdren/NetROTT)
-- [CRC-32/MPEG2]: [POD Terminal Reality games](https://github.com/jopadan/termpod/wiki)
+- [CRC-16/ARC: WAD Rise of The Triad](https://github.com/erysdren/NetROTT)
+- [CRC-32/MPEG2: POD Terminal Reality games](https://github.com/jopadan/termpod/wiki)
 
