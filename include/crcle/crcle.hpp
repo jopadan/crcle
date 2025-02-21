@@ -54,7 +54,8 @@ namespace poly
 	const type<32> crc32q                = 0x814141AB;
 };
 
-template<size_t N, poly::type<N> P, poly::type<N> xor_in = -1, poly::type<N> xor_out = -1, int reflect = poly::ref_none, poly::type<N> chk = poly::inverse, const char** name = nullptr>
+
+template<size_t N, poly::type<N> P, poly::type<N> xor_in = -1, poly::type<N> xor_out = -1, int reflect = poly::ref_none, poly::type<N> chk = poly::inverse, const char** model = nullptr>
 struct crc
 {
 	constexpr static poly::type<N> compute(const uint8_t* buf, size_t len)
@@ -76,33 +77,54 @@ struct crc
 		return (reflect & poly::ref_out) ? poly::reflect<N>(crc)^xor_out : crc^xor_out;
 	}
 
-	constexpr static bool check()
+	constexpr static inline const char* name()
 	{
-		poly::type<N> check = compute((const uint8_t*)"123456789", 9);
-		printf("[CHK] %s %.8X/%.8X\n", *name, check, chk);
+		static char str[256] = "";
+		if(sprintf(str,"CRC-%zu/%s", N, *model) == -1)
+			return nullptr;
+		return str;
+	}
+	constexpr static inline poly::type<N> check_value(const char* str = "123456789")
+	{
+		return compute((const uint8_t*)str, strlen(str));
+	}
+	constexpr static inline bool check()
+	{
+		poly::type<N> check = check_value();
+		printf("[CHK] %s %.8X/%.8X/%.8X/%.8X\n", name(), P, chk, check, magic());
 		return check == chk;
 	}
+	constexpr static inline poly::type<N> magic()
+	{
+		poly::type<N> magic  = xor_out;
+		if(reflect & poly::ref_out)
+			magic = poly::reflect<N>(magic);
+		crc<N, P, 0, 0, reflect, 0> magic_poly;
+		magic = magic_poly.compute((const uint8_t*)&magic, N);
+		if(reflect & poly::ref_in)
+			magic = poly::reflect<N>(magic);
+		return magic;
+	}
+};
+
+namespace model
+{
+	static const char* arc   = "ARC";
+	static const char* zip   = "ZIP";
+	static const char* mpeg2 = "MPEG2";
+	static const char* ccitt = "CCITT";
+	static const char* iscsi = "ISCSI";
 };
 
 namespace crc16
 {
-	namespace name
-	{
-		const char* arc = "CRC-16/ARC";
-	};
-	using arc = crc<16, poly::crc16, 0, 0, poly::ref_out | poly::ref_in, 0xBB3D, &name::arc>;
+	using arc = crc<16, poly::crc16, 0, 0, poly::ref_out | poly::ref_in, 0xBB3D, &model::arc>;
 };
+
 namespace crc32
 {
-	namespace name
-	{
-		const char* zip   = "CRC-32/ZIP";
-		const char* mpeg2 = "CRC-32/MPEG2";
-		const char* ccitt = "CRC-32/CCITT";
-		const char* iscsi = "CRC-32/ISCSI";
-	};
-	using zip   = crc<32, poly::crc32, poly::inverse, poly::inverse, poly::ref_none, 0xFC891918, &name::zip>;
-	using mpeg2 = crc<32, poly::crc32, poly::inverse, poly::neutral, poly::ref_none, 0x0376E6E7, &name::mpeg2>;
-	using ccitt = crc<32, poly::crc32, poly::inverse, poly::inverse, poly::ref_none, 0xFC891918, &name::ccitt>;
-	using iscsi = crc<32, poly::crc32_iscsi, poly::inverse, poly::inverse, poly::ref_out | poly::ref_in, 0xE3069283, &name::iscsi>;
+	using zip   = crc<32, poly::crc32, poly::inverse, poly::inverse, poly::ref_none, 0xFC891918, &model::zip>;
+	using mpeg2 = crc<32, poly::crc32, poly::inverse, poly::neutral, poly::ref_none, 0x0376E6E7, &model::mpeg2>;
+	using ccitt = crc<32, poly::crc32, poly::inverse, poly::inverse, poly::ref_none, 0xFC891918, &model::ccitt>;
+	using iscsi = crc<32, poly::crc32_iscsi, poly::inverse, poly::inverse, poly::ref_out | poly::ref_in, 0xE3069283, &model::iscsi>;
 };

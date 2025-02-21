@@ -1,7 +1,4 @@
-#include <cstdlib>
-#include <cstdio>
 #include <crcle/crcle.hpp>
-#include <immintrin.h>
 
 int main(int argc, char** argv)
 {
